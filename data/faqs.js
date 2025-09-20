@@ -1,32 +1,32 @@
 export const faqs = [
   {
-    question: "What makes Sensai unique as a career development tool?",
+    question: "What makes NextStep different from other career tools?",
     answer:
-      "Sensai combines AI-powered career tools with industry-specific insights to help you advance your career. Our platform offers three main features: an intelligent resume builder, a cover letter generator, and an adaptive interview preparation system. Each tool is tailored to your industry and skills, providing personalized guidance for your professional journey.",
+      "NextStep combines AI-powered career tools with real-world industry insights to help you move your career forward. Our platform offers key features like an intelligent resume builder, a smart cover letter generator, and adaptive interview prep. Everything is tailored to your industry and skills, providing personalized guidance for your professional growth.",
   },
   {
-    question: "How does Sensai create tailored content?",
+    question: "How does NextStep personalize content for me?",
     answer:
-      "Sensai learns about your industry, experience, and skills during onboarding. It then uses this information to generate customized resumes, cover letters, and interview questions. The content is specifically aligned with your professional background and industry standards, making it highly relevant and effective.",
+      "During onboarding, NextStep learns about your experience, skills, and industry. Using this information, it generates customized resumes, cover letters, and interview questions that are perfectly aligned with your background and industry standards.",
   },
   {
-    question: "How accurate and up-to-date are Sensai's industry insights?",
+    question: "How reliable and current are NextStep's industry insights?",
     answer:
-      "We update our industry insights weekly using advanced AI analysis of current market trends. This includes salary data, in-demand skills, and industry growth patterns. Our system constantly evolves to ensure you have the most relevant information for your career decisions.",
+      "We update our insights regularly using AI analysis of the latest market trends. This includes salary data, in-demand skills, and industry growth patterns, ensuring you always have up-to-date information to make informed career decisions.",
   },
   {
-    question: "Is my data secure with Sensai?",
+    question: "Is my personal data safe with NextStep?",
     answer:
-      "Absolutely. We prioritize the security of your professional information. All data is encrypted and securely stored using industry-standard practices. We use Clerk for authentication and never share your personal information with third parties.",
+      "Absolutely. Protecting your data is our top priority. All information is encrypted and stored securely following industry best practices. Authentication is handled via Clerk, and your data is never shared with third parties.",
   },
   {
-    question: "How can I track my interview preparation progress?",
+    question: "Can I track my progress in interview prep?",
     answer:
-      "Sensai tracks your performance across multiple practice interviews, providing detailed analytics and improvement suggestions. You can view your progress over time, identify areas for improvement, and receive AI-generated tips to enhance your interview skills based on your responses.",
+      "NextStep monitors your performance across practice interviews and provides detailed analytics. You can see your improvement over time, identify areas to focus on, and get AI-generated tips to enhance your interview skills based on your answers.",
   },
   {
     question: "Can I edit the AI-generated content?",
     answer:
-      "Yes! While Sensai generates high-quality initial content, you have full control to edit and customize all generated resumes, cover letters, and other content. Our markdown editor makes it easy to refine the content to perfectly match your needs.",
+      "Yes! NextStep gives you full control to customize all generated resumes, cover letters, and other content. Our editor makes it easy to tweak and refine everything so it perfectly matches your needs.",
   },
 ];

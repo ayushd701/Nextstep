@@ -2,24 +2,23 @@ import { UserPlus, FileEdit, Users, LineChart } from "lucide-react";
 
 export const howItWorks = [
   {
-    title: "Professional Onboarding",
-    description: "Share your industry and expertise for personalized guidance",
+    title: "Seamless Onboarding",
+    description: "Provide your industry and experience to receive tailored guidance",
     icon: <UserPlus className="w-8 h-8 text-primary" />,
   },
   {
-    title: "Craft Your Documents",
-    description: "Create ATS-optimized resumes and compelling cover letters",
+    title: "Build Your Documents",
+    description: "Design ATS-friendly resumes and persuasive cover letters with ease",
     icon: <FileEdit className="w-8 h-8 text-primary" />,
   },
   {
-    title: "Prepare for Interviews",
-    description:
-      "Practice with AI-powered mock interviews tailored to your role",
+    title: "Interview Readiness",
+    description: "Engage in AI-powered mock interviews customized for your role",
     icon: <Users className="w-8 h-8 text-primary" />,
   },
   {
-    title: "Track Your Progress",
-    description: "Monitor improvements with detailed performance analytics",
+    title: "Measure Your Growth",
+    description: "Track progress and gain insights with detailed performance analytics",
     icon: <LineChart className="w-8 h-8 text-primary" />,
   },
 ];
