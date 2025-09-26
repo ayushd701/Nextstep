@@ -15,7 +15,7 @@ import useFetch from "@/app/hooks/use-fetch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { BarLoader } from "react-spinners";
-import QuizResult from "./quiz-result";
+import QuizResult from "./quiz_result";
 
 const quiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
