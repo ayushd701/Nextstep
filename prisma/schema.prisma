@@ -40,7 +40,7 @@ model Assessment{
   userId        String
   user          User      @relation(fields: [userId], references: [id])
   quizScore     Float     
-  questions     Json[]   
+  questions     Json  
   category      String    
   improvementTip String?  
   createdAt     DateTime  @default(now())
