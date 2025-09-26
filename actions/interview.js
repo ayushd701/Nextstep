@@ -104,7 +104,7 @@ export async function saveQuizResult(questions, answers, score) {
 
       improvementTip = tipResult.response.text().trim();
       console.log(improvementTip);
-      console.log(score)
+      console.log(score);
     } catch (error) {
       console.error("Error generating improvement tip:", error);
     }
@@ -125,5 +125,32 @@ export async function saveQuizResult(questions, answers, score) {
   } catch (error) {
     console.error("Error saving quiz result:", error);
     throw new Error("Failed to save quiz result");
+  }
+}
+
+export async function getAssessments() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+
+  if (!user) throw new Error("User not found");
+
+  try {
+    const assessments = await db.assessment.findMany({
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    console.log(assessments)
+    return assessments;
+  } catch (error) {
+    console.error("Error getting assessments:", error);
+    throw new Error("Failed to fetch assessments");
   }
 }
