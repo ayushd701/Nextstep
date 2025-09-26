@@ -9,47 +9,44 @@ export async function updateUser(data) {
   if (!userId) throw new Error("Unauthorized");
 
   const user = await db.user.findUnique({
-    where: {
-      clerkUserId: userId,
-    },
+    where: { clerkUserId: userId },
   });
   if (!user) throw new Error("User not found");
 
+  let industryInsight = await db.industryInsight.findUnique({
+    where: { industry: data.industry },
+  });
+
+  let insights = null;
+  if (!industryInsight) {
+    insights = await generateAiInsights(data.industry);
+  }
+
   try {
-    const result = await db.$transaction(
-      async (tx) => {
-        let industryInsight = await tx.industryInsight.findUnique({
-          where: {
-            industry: data.industry,
-          },
-        });
-        if (!industryInsight) {
-          const insights = await generateAiInsights(data.industry);
-          industryInsight = await tx.industryInsight.create({
-            data: {
-              industry: data.industry,
-              ...insights,
-              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            },
-          });
-        }
-        const updatedUser = await tx.user.update({
-          where: {
-            clerkUserId: userId,
-          },
+    const result = await db.$transaction(async (tx) => {
+      if (!industryInsight && insights) {
+        industryInsight = await tx.industryInsight.create({
           data: {
             industry: data.industry,
-            experience: data.experience,
-            bio: data.bio,
-            skills: data.skills,
+            ...insights,
+            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           },
         });
-        return { updatedUser, industryInsight };
-      },
-      {
-        timeout: 10000,
       }
-    );
+
+      const updatedUser = await tx.user.update({
+        where: { clerkUserId: userId },
+        data: {
+          industry: data.industry,
+          experience: data.experience,
+          bio: data.bio,
+          skills: data.skills,
+        },
+      });
+
+      return { updatedUser, industryInsight };
+    });
+
     return { success: true, ...result };
   } catch (error) {
     console.error("Error updating user and industry:", error.message);
