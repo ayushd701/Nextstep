@@ -23,7 +23,6 @@ import { saveResume } from "@/actions/resume";
 import dynamic from "next/dynamic";
 import { entriesToMarkdown } from "@/app/lib/helper";
 
-// Dynamic import of MDEditor to prevent SSR hydration issues
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const ResumeBuilder = ({ initialContent }) => {
@@ -126,7 +125,7 @@ const ResumeBuilder = ({ initialContent }) => {
           Resume Builder
         </h1>
         <div className="space-x-2">
-          <Button variant="destructive" onClick={onSubmit} disabled={!!isSaving}>
+          <Button variant="destructive" onClick={onSubmit} disabled={!!isSaving} className="cursor-pointer">
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

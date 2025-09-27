@@ -94,7 +94,7 @@ export function EntryForm({ type, entries, onChange }) {
 
     await improveWithAIFn({
       current: description,
-      type: type.toLowerCase(), 
+      type: type.toLowerCase(),
     });
   };
 
@@ -168,6 +168,7 @@ export function EntryForm({ type, entries, onChange }) {
                   {...register("startDate")}
                   error={errors.startDate}
                 />
+                <label htmlFor="startDate"className="block text-sm font-medium text-gray-300 mx-3">Start Date</label>
                 {errors.startDate && (
                   <p className="text-sm text-red-500">
                     {errors.startDate.message}
@@ -181,6 +182,7 @@ export function EntryForm({ type, entries, onChange }) {
                   disabled={current}
                   error={errors.endDate}
                 />
+                <label htmlFor="endDate"className="block text-sm font-medium text-gray-300 mx-3">End Date</label>
                 {errors.endDate && (
                   <p className="text-sm text-red-500">
                     {errors.endDate.message}
@@ -239,6 +241,7 @@ export function EntryForm({ type, entries, onChange }) {
           </CardContent>
           <CardFooter className="flex justify-end space-x-2">
             <Button
+              className="cursor-pointer"
               type="button"
               variant="outline"
               onClick={() => {
@@ -248,7 +251,11 @@ export function EntryForm({ type, entries, onChange }) {
             >
               Cancel
             </Button>
-            <Button type="button" onClick={handleAdd}>
+            <Button
+              type="button"
+              className="cursor-pointer"
+              onClick={handleAdd}
+            >
               <PlusCircle className="h-4 w-4 mr-2" />
               Add Entry
             </Button>

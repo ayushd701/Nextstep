@@ -20,7 +20,6 @@ import QuizResult from "./quiz_result";
 const quiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
-  const [showExplanation, setShowExplanation] = useState(false);
 
   const {
     loading: generatingQuiz,
@@ -50,7 +49,6 @@ const quiz = () => {
   const handleNext = () => {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
-      setShowExplanation(false);
     } else {
       finishQuiz();
     }
@@ -80,7 +78,6 @@ const quiz = () => {
   const startNewQuiz = () => {
     setCurrentQuestion(0);
     setAnswers([]);
-    setShowExplanation(false);
     generateQuizFn();
     setResultData(null);
   };
@@ -110,7 +107,7 @@ const quiz = () => {
           </p>
         </CardContent>
         <CardFooter>
-          <Button onClick={generateQuizFn} className="w-full">
+          <Button onClick={generateQuizFn} className="w-full cursor-pointer">
             Start Quiz
           </Button>
         </CardFooter>
@@ -141,28 +138,12 @@ const quiz = () => {
             </div>
           ))}
         </RadioGroup>
-
-        {showExplanation && (
-          <div className="mt-4 p-4 bg-muted rounded-lg">
-            <p className="font-medium">Explanation:</p>
-            <p className="text-muted-foreground">{question.explanation}</p>
-          </div>
-        )}
       </CardContent>
       <CardFooter className="flex justify-between">
-        {!showExplanation && (
-          <Button
-            onClick={() => setShowExplanation(true)}
-            variant="outline"
-            disabled={!answers[currentQuestion]}
-          >
-            Show Explanation
-          </Button>
-        )}
         <Button
           onClick={handleNext}
           disabled={!answers[currentQuestion] || savingResult}
-          className="ml-auto"
+          className="ml-auto cursor-pointer"
         >
           {savingResult && (
             <BarLoader className="mt-4" width={"100%"} color="gray" />
