@@ -51,7 +51,7 @@ const header = async () => {
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" sideOffset={8} className="w-48 z-50 rounded-xl shadow-xl border">
                 <div className="md:hidden">
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard" className="flex items-center gap-2">

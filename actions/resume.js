@@ -3,14 +3,13 @@
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { checkUser } from "@/lib/checkUser"; // 🔥 added
+import { checkUser } from "@/lib/checkUser";
 
 const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAi.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-// ================== SAVE RESUME ==================
 export async function saveResume(content) {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
   try {
@@ -35,10 +34,9 @@ export async function saveResume(content) {
   }
 }
 
-// ================== GET RESUME ==================
 export async function getResume() {
-  const user = await checkUser(); // 🔥 ensure user exists
-  if (!user) return null; // 🔥 safe fallback
+  const user = await checkUser(); 
+  if (!user) return null;
 
   return await db.resume.findUnique({
     where: {
@@ -47,12 +45,10 @@ export async function getResume() {
   });
 }
 
-// ================== IMPROVE WITH AI ==================
 export async function improveWithAI({ current, type }) {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
-  // 🔥 fetch industryInsight separately (since checkUser doesn't include it)
   const fullUser = await db.user.findUnique({
     where: { id: user.id },
     include: {

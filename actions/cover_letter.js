@@ -2,16 +2,15 @@
 
 import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { checkUser } from "@/lib/checkUser"; // 🔥 added
+import { checkUser } from "@/lib/checkUser"; 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
 });
 
-// ================== GENERATE COVER LETTER ==================
 export async function generateCoverLetter(data) {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
   const prompt = `
@@ -62,10 +61,9 @@ export async function generateCoverLetter(data) {
   }
 }
 
-// ================== GET ALL ==================
 export async function getCoverLetters() {
-  const user = await checkUser(); // 🔥 ensure user exists
-  if (!user) return []; // 🔥 safe fallback
+  const user = await checkUser(); 
+  if (!user) return []; 
 
   return await db.coverLetter.findMany({
     where: {
@@ -77,10 +75,9 @@ export async function getCoverLetters() {
   });
 }
 
-// ================== GET ONE ==================
 export async function getCoverLetter(id) {
-  const user = await checkUser(); // 🔥 ensure user exists
-  if (!user) return null; // 🔥 safe fallback
+  const user = await checkUser(); 
+  if (!user) return null; 
 
   return await db.coverLetter.findUnique({
     where: {
@@ -90,9 +87,8 @@ export async function getCoverLetter(id) {
   });
 }
 
-// ================== DELETE ==================
 export async function deleteCoverLetter(id) {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
   return await db.coverLetter.delete({

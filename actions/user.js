@@ -3,11 +3,10 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateAiInsights } from "./dashboard";
-import { checkUser } from "@/lib/checkUser"; // 🔥 added
+import { checkUser } from "@/lib/checkUser"; 
 
-// ================== UPDATE USER ==================
 export async function updateUser(data) {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
   let industryInsight = await db.industryInsight.findUnique({
@@ -34,7 +33,7 @@ export async function updateUser(data) {
       }
 
       const updatedUser = await tx.user.update({
-        where: { id: user.id }, // 🔥 FIXED (was clerkUserId)
+        where: { id: user.id }, 
         data: {
           industry: data.industry,
           experience: data.experience,
@@ -53,10 +52,9 @@ export async function updateUser(data) {
   }
 }
 
-// ================== ONBOARDING STATUS ==================
 export async function getUserOnboardingStatus() {
   try {
-    const user = await checkUser(); // 🔥 ensures user exists
+    const user = await checkUser(); 
 
     if (!user) {
       return { isOnboarded: false };
@@ -71,10 +69,9 @@ export async function getUserOnboardingStatus() {
   }
 }
 
-// ================== GET USER PROFILE ==================
 export async function getUserProfile() {
   try {
-    const user = await checkUser(); // 🔥 ensures user exists
+    const user = await checkUser(); 
 
     if (!user) {
       return { success: true, data: null };

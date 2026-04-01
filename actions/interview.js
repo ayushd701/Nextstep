@@ -2,14 +2,13 @@
 
 import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { checkUser } from "@/lib/checkUser"; // 🔥 added
+import { checkUser } from "@/lib/checkUser"; 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-// ================== GENERATE QUIZ ==================
 export async function generateQuiz() {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
   const prompt = `
@@ -48,12 +47,10 @@ export async function generateQuiz() {
   }
 }
 
-// ================== SAVE QUIZ RESULT ==================
 export async function saveQuizResult(questions, answers, score) {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
-  // ===== Normalize data =====
   const questionResults = questions.map((q, index) => {
     const ans = answers[index];
 
@@ -66,7 +63,6 @@ export async function saveQuizResult(questions, answers, score) {
     };
   });
 
-  // Debug logs
   try {
     console.log("---- SAVE QUIZ DEBUG ----");
     console.log("User DB id:", user.id);
@@ -128,10 +124,9 @@ Keep the response under 2 sentences and make it encouraging.
   }
 }
 
-// ================== GET ASSESSMENTS ==================
 export async function getAssessments() {
-  const user = await checkUser(); // 🔥 ensure user exists
-  if (!user) return []; // 🔥 safe fallback
+  const user = await checkUser(); 
+  if (!user) return []; 
 
   try {
     const assessments = await db.assessment.findMany({

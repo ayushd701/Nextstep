@@ -2,14 +2,13 @@
 
 import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { checkUser } from "@/lib/checkUser"; // 🔥 added
+import { checkUser } from "@/lib/checkUser"; 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
 });
 
-// ================== GENERATE AI INSIGHTS ==================
 export const generateAiInsights = async (industry) => {
   const prompt = `
           Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
@@ -39,12 +38,10 @@ export const generateAiInsights = async (industry) => {
   return JSON.parse(cleanedText);
 };
 
-// ================== GET INDUSTRY INSIGHTS ==================
 export async function getIndustryInsights() {
-  const user = await checkUser(); // 🔥 ensure user exists
+  const user = await checkUser(); 
   if (!user) throw new Error("Unauthorized");
 
-  // 🔥 fetch with relation (since checkUser doesn't include it)
   const fullUser = await db.user.findUnique({
     where: {
       id: user.id,
@@ -54,10 +51,8 @@ export async function getIndustryInsights() {
     },
   });
 
-  // 🛑 safety (should rarely happen)
   if (!fullUser) return null;
 
-  // 🔥 if no insights → generate & store
   if (!fullUser.industryInsight) {
     const insights = await generateAiInsights(fullUser.industry);
 
