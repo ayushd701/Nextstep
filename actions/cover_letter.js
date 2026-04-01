@@ -1,23 +1,18 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { checkUser } from "@/lib/checkUser"; // 🔥 added
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
 });
 
+// ================== GENERATE COVER LETTER ==================
 export async function generateCoverLetter(data) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) throw new Error("Unauthorized");
 
   const prompt = `
     Write a professional cover letter for a ${data.jobTitle} position at ${
@@ -48,6 +43,7 @@ export async function generateCoverLetter(data) {
   try {
     const result = await model.generateContent(prompt);
     const content = result.response.text().trim();
+
     const coverLetter = await db.coverLetter.create({
       data: {
         content,
@@ -66,15 +62,10 @@ export async function generateCoverLetter(data) {
   }
 }
 
+// ================== GET ALL ==================
 export async function getCoverLetters() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) return []; // 🔥 safe fallback
 
   return await db.coverLetter.findMany({
     where: {
@@ -86,15 +77,10 @@ export async function getCoverLetters() {
   });
 }
 
+// ================== GET ONE ==================
 export async function getCoverLetter(id) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) return null; // 🔥 safe fallback
 
   return await db.coverLetter.findUnique({
     where: {
@@ -104,15 +90,10 @@ export async function getCoverLetter(id) {
   });
 }
 
+// ================== DELETE ==================
 export async function deleteCoverLetter(id) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) throw new Error("Unauthorized");
 
   return await db.coverLetter.delete({
     where: {

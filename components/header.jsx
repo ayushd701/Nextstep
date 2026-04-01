@@ -23,10 +23,9 @@ import {
   PenBox,
   GraduationCap,
 } from "lucide-react";
-import {checkUser} from "../lib/checkUser"
+import { checkUser } from "../lib/checkUser";
 
 const header = async () => {
-  await checkUser();
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -42,9 +41,6 @@ const header = async () => {
               >
                 <LayoutDashboard className="h-4 w-4" />
                 Industry Insights
-              </Button>
-              <Button variant="ghost" className="md:hidden w-10 h-10 p-0">
-                <LayoutDashboard className="h-4 w-4" />
               </Button>
             </Link>
             <DropdownMenu>
@@ -79,6 +75,15 @@ const header = async () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Link href="/onboarding">
+              <Button
+                variant="outline"
+                className="hidden md:inline-flex items-center gap-2 cursor-pointer"
+              >
+                <PenBox className="h-4 w-4" />
+                Update Profile
+              </Button>
+            </Link>
           </SignedIn>
           <SignedOut>
             <SignInButton>

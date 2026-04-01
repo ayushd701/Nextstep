@@ -1,14 +1,15 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { checkUser } from "@/lib/checkUser"; // 🔥 added
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
 });
 
+// ================== GENERATE AI INSIGHTS ==================
 export const generateAiInsights = async (industry) => {
   const prompt = `
           Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
@@ -38,29 +39,40 @@ export const generateAiInsights = async (industry) => {
   return JSON.parse(cleanedText);
 };
 
+// ================== GET INDUSTRY INSIGHTS ==================
 export async function getIndustryInsights() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const user = await db.user.findUnique({
-    where: {
-      clerkUserId: userId,
-    },
-    include:{
-      industryInsight: true ,
-    }
-  });
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) throw new Error("Unauthorized");
 
-  if (!user.industryInsight) {
-    const insights = await generateAiInsights(user.industry);
+  // 🔥 fetch with relation (since checkUser doesn't include it)
+  const fullUser = await db.user.findUnique({
+    where: {
+      id: user.id,
+    },
+    include: {
+      industryInsight: true,
+    },
+  });
+
+  // 🛑 safety (should rarely happen)
+  if (!fullUser) return null;
+
+  // 🔥 if no insights → generate & store
+  if (!fullUser.industryInsight) {
+    const insights = await generateAiInsights(fullUser.industry);
+
     const industryInsights = await db.industryInsight.create({
       data: {
-        industry: user.industry,
+        industry: fullUser.industry,
         ...insights,
-        nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        nextUpdate: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000
+        ),
       },
     });
+
     return industryInsights;
   }
-  return user.industryInsight;
+
+  return fullUser.industryInsight;
 }

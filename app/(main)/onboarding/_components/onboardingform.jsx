@@ -28,11 +28,16 @@ import {
 } from "@/components/ui/select";
 import useFetch from "../../../hooks/use-fetch";
 import { onboardingSchema } from "@/app/lib/schema";
-import { updateUser } from "@/actions/user";
+import { updateUser, getUserProfile } from "@/actions/user";
 
 const OnboardingForm = ({ industries }) => {
   const router = useRouter();
+
   const [selectedIndustry, setSelectedIndustry] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [isProfilePresent, setIsProfilePresent] = useState(false);
 
   const {
     loading: updateLoading,
@@ -43,11 +48,19 @@ const OnboardingForm = ({ industries }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     setValue,
     watch,
   } = useForm({
     resolver: zodResolver(onboardingSchema),
+    mode: "onTouched",
+    defaultValues: {
+      industry: "",
+      subIndustry: "",
+      experience: "",
+      skills: "",
+      bio: "",
+    },
   });
 
   const onSubmit = async (values) => {
@@ -66,12 +79,77 @@ const OnboardingForm = ({ industries }) => {
   };
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (updateResult?.success && !updateLoading) {
-      toast.success("Profile completed successfully!");
+      toast.success(
+        isProfilePresent
+          ? "Profile updated successfully!"
+          : "Profile completed successfully!",
+      );
+
       router.push("/dashboard");
       router.refresh();
     }
-  }, [updateResult, updateLoading]);
+  }, [updateResult, updateLoading, isProfilePresent]);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await getUserProfile();
+
+        if (res?.success && res.data) {
+          const data = res.data;
+
+          const hasProfile = !!data.bio;
+          setIsProfilePresent(hasProfile);
+
+          setValue("industry", data.industry, { shouldValidate: true });
+
+          const industryObj = industries.find(
+            (ind) => ind.id === data.industry,
+          );
+          setSelectedIndustry(industryObj);
+
+          const formattedSubIndustry = data.subIndustry
+            ?.split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+
+          setValue("subIndustry", formattedSubIndustry, {
+            shouldValidate: true,
+          });
+
+          setValue("experience", data.experience?.toString() || "");
+
+          setValue(
+            "skills",
+            Array.isArray(data.skills)
+              ? data.skills.join(", ")
+              : data.skills || "",
+          );
+
+          setValue("bio", data.bio);
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      } finally {
+        setProfileLoaded(true);
+      }
+    }
+
+    fetchProfile();
+  }, []);
+
+  if (!isMounted || !profileLoaded) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
 
   const watchIndustry = watch("industry");
 
@@ -80,24 +158,26 @@ const OnboardingForm = ({ industries }) => {
       <Card className="w-full max-w-lg mt-10 mx-2">
         <CardHeader>
           <CardTitle className="gradient-title text-4xl">
-            Complete Your Profile
+            {isProfilePresent ? "Update Profile" : "Complete Profile"}
           </CardTitle>
           <CardDescription>
             Select your industry to get personalized career insights and
             recommendations.
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
               <Select
+                value={watch("industry") || ""}
                 onValueChange={(value) => {
-                  setValue("industry", value);
+                  setValue("industry", value || "", { shouldValidate: true });
                   setSelectedIndustry(
-                    industries.find((ind) => ind.id === value)
+                    industries.find((ind) => ind.id === value),
                   );
-                  setValue("subIndustry", "");
+                  setValue("subIndustry", "", { shouldValidate: true });
                 }}
               >
                 <SelectTrigger id="industry">
@@ -115,7 +195,7 @@ const OnboardingForm = ({ industries }) => {
                 </SelectContent>
               </Select>
               {errors.industry && (
-                <p className="text-sm text-red-500">
+                <p className="text-sm text-red-400 mt-1">
                   {errors.industry.message}
                 </p>
               )}
@@ -125,7 +205,12 @@ const OnboardingForm = ({ industries }) => {
               <div className="space-y-2">
                 <Label htmlFor="subIndustry">Specialization</Label>
                 <Select
-                  onValueChange={(value) => setValue("subIndustry", value)}
+                  value={watch("subIndustry") || ""}
+                  onValueChange={(value) =>
+                    setValue("subIndustry", value || "", {
+                      shouldValidate: true,
+                    })
+                  }
                 >
                   <SelectTrigger id="subIndustry">
                     <SelectValue placeholder="Select your specialization" />
@@ -142,7 +227,7 @@ const OnboardingForm = ({ industries }) => {
                   </SelectContent>
                 </Select>
                 {errors.subIndustry && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-sm text-red-400 mt-1">
                     {errors.subIndustry.message}
                   </p>
                 )}
@@ -160,7 +245,7 @@ const OnboardingForm = ({ industries }) => {
                 {...register("experience")}
               />
               {errors.experience && (
-                <p className="text-sm text-red-500">
+                <p className="text-sm text-red-400 mt-1">
                   {errors.experience.message}
                 </p>
               )}
@@ -177,7 +262,9 @@ const OnboardingForm = ({ industries }) => {
                 Separate multiple skills with commas
               </p>
               {errors.skills && (
-                <p className="text-sm text-red-500">{errors.skills.message}</p>
+                <p className="text-sm text-red-400 mt-1">
+                  {errors.skills.message}
+                </p>
               )}
             </div>
 
@@ -190,16 +277,24 @@ const OnboardingForm = ({ industries }) => {
                 {...register("bio")}
               />
               {errors.bio && (
-                <p className="text-sm text-red-500">{errors.bio.message}</p>
+                <p className="text-sm text-red-400 mt-1">
+                  {errors.bio.message}
+                </p>
               )}
             </div>
 
-            <Button type="submit" className="w-full cursor-pointer" disabled={updateLoading}>
+            <Button
+              type="submit"
+              className="w-full cursor-pointer"
+              disabled={!isValid || updateLoading}
+            >
               {updateLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
+              ) : isProfilePresent ? (
+                "Update Profile"
               ) : (
                 "Complete Profile"
               )}

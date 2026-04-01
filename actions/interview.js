@@ -1,25 +1,16 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { checkUser } from "@/lib/checkUser"; // 🔥 added
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+// ================== GENERATE QUIZ ==================
 export async function generateQuiz() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-    select: {
-      industry: true,
-      skills: true,
-    },
-  });
-
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) throw new Error("Unauthorized");
 
   const prompt = `
     Generate 10 technical interview questions for a ${
@@ -57,27 +48,41 @@ export async function generateQuiz() {
   }
 }
 
+// ================== SAVE QUIZ RESULT ==================
 export async function saveQuizResult(questions, answers, score) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
+  // ===== Normalize data =====
+  const questionResults = questions.map((q, index) => {
+    const ans = answers[index];
+
+    return {
+      question: q.question ?? "",
+      answer: q.correctAnswer ?? "",
+      userAnswer: Array.isArray(ans) ? ans[0] : ans ?? null,
+      isCorrect: q.correctAnswer === ans,
+      explanation: q.explanation ?? "",
+    };
   });
 
-  if (!user) throw new Error("User not found");
-
-  const questionResults = questions.map((q, index) => ({
-    question: q.question,
-    answer: q.correctAnswer,
-    userAnswer: answers[index],
-    isCorrect: q.correctAnswer === answers[index],
-    explanation: q.explanation,
-  }));
+  // Debug logs
+  try {
+    console.log("---- SAVE QUIZ DEBUG ----");
+    console.log("User DB id:", user.id);
+    console.log("Answers:", answers);
+    console.log("Answer types:", answers.map(a => typeof a));
+    console.log("Is nested array present:", answers.some(a => Array.isArray(a)));
+    console.log("Sample questionResult:", questionResults[0]);
+    console.log("Payload size:", JSON.stringify(questionResults).length);
+  } catch (e) {
+    console.log("Debug logging failed:", e);
+  }
 
   const wrongAnswers = questionResults.filter((q) => !q.isCorrect);
 
   let improvementTip = null;
+
   if (wrongAnswers.length > 0) {
     const wrongQuestionsText = wrongAnswers
       .map(
@@ -87,19 +92,16 @@ export async function saveQuizResult(questions, answers, score) {
       .join("\n\n");
 
     const improvementPrompt = `
-      The user got the following ${user.industry} technical interview questions wrong:
+The user got the following ${user.industry} technical interview questions wrong:
 
-      ${wrongQuestionsText}
+${wrongQuestionsText}
 
-      Based on these mistakes, provide a concise, specific improvement tip.
-      Focus on the knowledge gaps revealed by these wrong answers.
-      Keep the response under 2 sentences and make it encouraging.
-      Don't explicitly mention the mistakes, instead focus on what to learn/practice.
-    `;
+Based on these mistakes, provide a concise, specific improvement tip.
+Keep the response under 2 sentences and make it encouraging.
+`;
 
     try {
       const tipResult = await model.generateContent(improvementPrompt);
-
       improvementTip = tipResult.response.text().trim();
     } catch (error) {
       console.error("Error generating improvement tip:", error);
@@ -111,28 +113,25 @@ export async function saveQuizResult(questions, answers, score) {
       data: {
         userId: user.id,
         quizScore: score,
-        questions: questionResults,
+        questions: JSON.parse(JSON.stringify(questionResults)),
         category: "Technical",
         improvementTip,
       },
     });
 
+    console.log("Assessment saved successfully:", assessment.id);
     return assessment;
   } catch (error) {
     console.error("Error saving quiz result:", error);
+    console.error("Full payload:", JSON.stringify(questionResults));
     throw new Error("Failed to save quiz result");
   }
 }
 
+// ================== GET ASSESSMENTS ==================
 export async function getAssessments() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) return []; // 🔥 safe fallback
 
   try {
     const assessments = await db.assessment.findMany({

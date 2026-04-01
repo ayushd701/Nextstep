@@ -3,9 +3,12 @@ import React from "react";
 import StatsCards from "./_components/stats_cards"
 import PerformanceChart from "./_components/performance_chart"
 import QuizList from "./_components/quiz_list"
+import { checkUser } from "@/lib/checkUser";
+import { requireOnboarding } from "@/lib/requireOnboarding";
 
 
 const Interviewpage = async () => {
+  await requireOnboarding();
   const assessments = await getAssessments();
 
   return (

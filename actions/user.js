@@ -3,15 +3,12 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateAiInsights } from "./dashboard";
+import { checkUser } from "@/lib/checkUser"; // 🔥 added
 
+// ================== UPDATE USER ==================
 export async function updateUser(data) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!user) throw new Error("User not found");
+  const user = await checkUser(); // 🔥 ensure user exists
+  if (!user) throw new Error("Unauthorized");
 
   let industryInsight = await db.industryInsight.findUnique({
     where: { industry: data.industry },
@@ -29,13 +26,15 @@ export async function updateUser(data) {
           data: {
             industry: data.industry,
             ...insights,
-            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            nextUpdate: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000
+            ),
           },
         });
       }
 
       const updatedUser = await tx.user.update({
-        where: { clerkUserId: userId },
+        where: { id: user.id }, // 🔥 FIXED (was clerkUserId)
         data: {
           industry: data.industry,
           experience: data.experience,
@@ -54,31 +53,54 @@ export async function updateUser(data) {
   }
 }
 
+// ================== ONBOARDING STATUS ==================
 export async function getUserOnboardingStatus() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
-
   try {
-    const user = await db.user.findUnique({
-      where: {
-        clerkUserId: userId,
-      },
-      select: {
-        industry: true,
-      },
-    });
+    const user = await checkUser(); // 🔥 ensures user exists
+
+    if (!user) {
+      return { isOnboarded: false };
+    }
 
     return {
-      isOnboarded: !!user?.industry,
+      isOnboarded: !!user.industry,
     };
   } catch (error) {
     console.error("Error checking onboarding status:", error);
-    throw new Error("Failed to check onboarding status");
+    return { isOnboarded: false };
+  }
+}
+
+// ================== GET USER PROFILE ==================
+export async function getUserProfile() {
+  try {
+    const user = await checkUser(); // 🔥 ensures user exists
+
+    if (!user) {
+      return { success: true, data: null };
+    }
+
+    let industry = null;
+    let subIndustry = null;
+
+    if (user.industry) {
+      const parts = user.industry.split("-");
+      industry = parts[0];
+      subIndustry = parts.slice(1).join(" ");
+    }
+
+    return {
+      success: true,
+      data: {
+        industry,
+        subIndustry,
+        experience: user.experience,
+        bio: user.bio,
+        skills: user.skills,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching user profile:", error.message);
+    throw new Error("Failed to fetch profile");
   }
 }
