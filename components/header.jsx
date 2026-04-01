@@ -52,6 +52,26 @@ const header = async () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <div className="md:hidden">
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Industry Insights
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/onboarding"
+                      className="flex items-center gap-2"
+                    >
+                      <PenBox className="h-4 w-4" />
+                      Update Profile
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <div className="border-t my-1" />
+                </div>
                 <DropdownMenuItem asChild>
                   <Link href="/resume" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
